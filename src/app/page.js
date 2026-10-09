@@ -1,69 +1,153 @@
-import Image from "next/image";
 
-export default function Home() {
+"use client";
+
+import { useEffect, useState } from "react";
+import Hero from "@/components/Hero";
+import ProductCard from "@/components/ProductCard";
+import { apiFetch, getList } from "@/lib/api";
+
+
+function getName(product) {
+  return product.nameBn || product.name || product.title || "পণ্য";
+}
+
+function getChange(product) {
+  return Number(
+    product.change?.pct ??
+    product.priceChangePercent ??
+    product.changePercent ??
+    0
+  );
+}
+
+function ProductSection({ title, subtitle, products, loading, id }) {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.js
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <section id={id} className="section-space scroll-mt-40">
+      <div className="container-page">
+        <div className="mb-7">
+          <h2 className="text-2xl font-black text-gray-900 sm:text-3xl">
+            {title}
+          </h2>
+          <p className="mt-2 text-sm text-gray-500 sm:text-base">
+            {subtitle}
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+        {loading ? (
+          <div className="product-grid">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <div
+                key={index}
+                className="rounded-2xl border border-gray-100 bg-white p-4"
+              >
+                <div className="skeleton h-28 w-full" />
+                <div className="skeleton mt-4 h-5 w-3/4" />
+                <div className="skeleton mt-3 h-4 w-1/2" />
+                <div className="skeleton mt-5 h-8 w-full" />
+              </div>
+            ))}
+          </div>
+        ) : products.length ? (
+          <div className="product-grid">
+            {products.map((product, index) => (
+              <ProductCard
+                key={product.id ?? product.slug ?? index}
+                product={product}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center text-gray-500">
+            এই বিভাগে দেখানোর মতো পণ্য পাওয়া যায়নি।
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+export default function HomePage() {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadProducts() {
+      try {
+        setLoading(true);
+        setError("");
+
+        const data = await apiFetch("/products");
+        const list = getList(data, "products");
+
+        if (active) setProducts(list);
+      } catch {
+        if (active) {
+          setError("পণ্যের তথ্য লোড করা যায়নি। আবার চেষ্টা করুন।");
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
+    loadProducts();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const risers = [...products]
+    .filter((product) => getChange(product) > 0)
+    .sort((a, b) => getChange(b) - getChange(a))
+    .slice(0, 6);
+
+  const fallers = [...products]
+    .filter((product) => getChange(product) < 0)
+    .sort((a, b) => getChange(a) - getChange(b))
+    .slice(0, 6);
+
+  return (
+    <>
+      <Hero />
+
+      {error && (
+        <div className="container-page mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+          <p>{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-2 font-bold underline"
           >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            আবার চেষ্টা করুন
+          </button>
         </div>
-      </main>
-    </div>
+      )}
+
+      <ProductSection
+        title="আজ দাম বেড়েছে ▲"
+        subtitle="যেসব পণ্যের দাম বেড়েছে, সেগুলো এক নজরে দেখুন।"
+        products={risers}
+        loading={loading}
+      />
+
+      <div className="border-y border-gray-100 bg-white">
+        <ProductSection
+          title="আজ দাম কমেছে ▼"
+          subtitle="যেসব পণ্যের দাম কমেছে, সেগুলো দেখে নিন।"
+          products={fallers}
+          loading={loading}
+        />
+      </div>
+
+      <ProductSection
+        id="সব-পণ্য"
+        title="সব পণ্য"
+        subtitle="নিত্যপ্রয়োজনীয় পণ্যের দাম ও পরিবর্তনের তথ্য দেখুন।"
+        products={products}
+        loading={loading}
+      />
+    </>
   );
 }
