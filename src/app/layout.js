@@ -3,6 +3,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PriceTicker from "@/components/PriceTicker";
+import { Toaster } from "react-hot-toast";
 
 export const metadata = {
   title: {
@@ -17,6 +18,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="bn">
       <body className="min-h-screen">
+        <Toaster position="top-right" />
         <Navbar />
         <PriceTicker />
         <main>{children}</main>
