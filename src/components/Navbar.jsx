@@ -1,8 +1,11 @@
+
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
+import toast from "react-hot-toast";
 
 const categories = [
   { name: "সব পণ্য", slug: "all" },
@@ -15,7 +18,10 @@ const categories = [
 
 function NavbarContent() {
   const pathname = usePathname();
+  const router = useRouter();
   const [currentDate, setCurrentDate] = useState("");
+
+  const { data: session, isPending } = authClient.useSession();
 
   useEffect(() => {
     const formattedDate = new Intl.DateTimeFormat("bn-BD", {
@@ -29,11 +35,82 @@ function NavbarContent() {
     setCurrentDate(formattedDate);
   }, []);
 
+  async function handleLogout() {
+    try {
+      const result = await authClient.signOut();
+
+      if (result.error) {
+        toast.error(result.error.message || "লগআউট করা যায়নি");
+        return;
+      }
+
+      toast.success("সফলভাবে লগআউট হয়েছে");
+      router.replace("/signin");
+      router.refresh();
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("লগআউট করতে সমস্যা হয়েছে");
+    }
+  }
+
+  function AuthLinks({ mobile = false }) {
+    const linkStyle = mobile
+      ? "rounded-lg px-4 py-2 text-sm font-semibold"
+      : "rounded-xl px-4 py-2 text-sm font-semibold";
+
+    if (isPending) {
+      return (
+        <span className="px-3 py-2 text-sm text-gray-500">
+          অপেক্ষা করুন...
+        </span>
+      );
+    }
+
+    if (session) {
+      return (
+        <>
+          <Link
+            href="/profile"
+            className={`${linkStyle} border border-green-600 text-green-800 hover:bg-green-50`}
+          >
+            আমার প্রোফাইল
+          </Link>
+
+          <button
+            type="button"
+            onClick={handleLogout}
+            className={`${linkStyle} bg-red-600 text-white hover:bg-red-700`}
+          >
+            লগআউট
+          </button>
+        </>
+      );
+    }
+
+    return (
+      <>
+        <Link
+          href="/signin"
+          className={`${linkStyle} text-green-800 hover:bg-green-50`}
+        >
+          সাইন ইন
+        </Link>
+
+        <Link
+          href="/signup"
+          className={`${linkStyle} bg-green-700 text-white hover:bg-green-800`}
+        >
+          সাইন আপ
+        </Link>
+      </>
+    );
+  }
+
   return (
     <header className="sticky top-0 z-50 border-b border-green-100 bg-white/95 backdrop-blur">
       <div className="container-page">
         <div className="flex min-h-[82px] items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-3">
+          <Link href="/" className="flex shrink-0 items-center gap-3">
             <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-green-100 text-2xl">
               🛒
             </span>
@@ -50,19 +127,7 @@ function NavbarContent() {
           </Link>
 
           <div className="hidden items-center gap-2 sm:flex">
-            <Link
-              href="/signin"
-              className="rounded-xl px-4 py-2 text-sm font-semibold text-green-800 hover:bg-green-50"
-            >
-              সাইন ইন
-            </Link>
-
-            <Link
-              href="/signup"
-              className="rounded-xl bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-800"
-            >
-              সাইন আপ
-            </Link>
+            <AuthLinks />
           </div>
         </div>
 
@@ -94,20 +159,8 @@ function NavbarContent() {
           })}
         </nav>
 
-        <div className="flex gap-2 pb-3 sm:hidden">
-          <Link
-            href="/signin"
-            className="flex-1 rounded-xl border border-green-200 py-2 text-center text-sm font-semibold text-green-800"
-          >
-            সাইন ইন
-          </Link>
-
-          <Link
-            href="/signup"
-            className="flex-1 rounded-xl bg-green-700 py-2 text-center text-sm font-semibold text-white"
-          >
-            সাইন আপ
-          </Link>
+        <div className="flex flex-wrap items-center gap-2 pb-3 sm:hidden">
+          <AuthLinks mobile />
         </div>
       </div>
     </header>

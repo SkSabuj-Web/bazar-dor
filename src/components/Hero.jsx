@@ -35,30 +35,16 @@ export default function Hero() {
         </div>
 
         <div className="relative flex min-h-[280px] items-center justify-center sm:min-h-[360px]">
-          <div className="absolute h-64 w-64 rounded-full bg-green-200/60 blur-3xl sm:h-80 sm:w-80" />
+  <div className="absolute h-64 w-64 rounded-full bg-green-200/60 blur-3xl sm:h-80 sm:w-80" />
 
-          <div className="relative grid w-full max-w-md grid-cols-2 gap-4">
-            <div className="flex min-h-40 flex-col items-center justify-center rounded-3xl border border-white bg-white/90 p-5 shadow-xl shadow-green-900/5 sm:min-h-48">
-              <span className="text-6xl sm:text-7xl">🥬</span>
-              <span className="mt-3 font-bold text-gray-800">তাজা সবজি</span>
-            </div>
-
-            <div className="mt-8 flex min-h-40 flex-col items-center justify-center rounded-3xl border border-white bg-white/90 p-5 shadow-xl shadow-green-900/5 sm:min-h-48">
-              <span className="text-6xl sm:text-7xl">🍚</span>
-              <span className="mt-3 font-bold text-gray-800">চাল ও ডাল</span>
-            </div>
-
-            <div className="flex min-h-40 flex-col items-center justify-center rounded-3xl border border-white bg-white/90 p-5 shadow-xl shadow-green-900/5 sm:min-h-48">
-              <span className="text-6xl sm:text-7xl">🐟</span>
-              <span className="mt-3 font-bold text-gray-800">মাছ</span>
-            </div>
-
-            <div className="mt-8 flex min-h-40 flex-col items-center justify-center rounded-3xl border border-white bg-white/90 p-5 shadow-xl shadow-green-900/5 sm:min-h-48">
-              <span className="text-6xl sm:text-7xl">🥚</span>
-              <span className="mt-3 font-bold text-gray-800">ডিম ও প্রোটিন</span>
-            </div>
-          </div>
-        </div>
+  <div className="relative w-full max-w-lg">
+    <img
+      src="/bazar-hero.png"
+      alt="বাজারের তাজা পণ্য"
+      className="h-auto w-full rounded-3xl object-contain drop-shadow-xl"
+    />
+  </div>
+</div>
       </div>
     </section>
   );

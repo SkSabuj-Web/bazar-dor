@@ -3,25 +3,36 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import toast from "react-hot-toast";
 import { authClient } from "@/lib/auth-client";
 
-export default function SigninPage() {
+function SigninForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(event) {
     event.preventDefault();
+
+    if (loading) return;
+
     setLoading(true);
 
     try {
+      const callbackURL = searchParams.get("callbackURL") || "/";
+      const safeCallbackURL =
+        callbackURL.startsWith("/") && !callbackURL.startsWith("//")
+          ? callbackURL
+          : "/";
+
       const { error } = await authClient.signIn.email({
-        email,
+        email: email.trim(),
         password,
-        callbackURL: "/",
+        callbackURL: safeCallbackURL,
       });
 
       if (error) {
@@ -30,7 +41,7 @@ export default function SigninPage() {
       }
 
       toast.success("সফলভাবে লগইন হয়েছে!");
-      router.push("/");
+      router.replace(safeCallbackURL);
       router.refresh();
     } catch {
       toast.error("লগইন করা যায়নি। আবার চেষ্টা করুন।");
@@ -57,8 +68,14 @@ export default function SigninPage() {
 
         <div className="mt-7 space-y-4">
           <div>
-            <label className="mb-2 block text-sm font-bold">ইমেইল</label>
+            <label
+              htmlFor="email"
+              className="mb-2 block text-sm font-bold text-gray-800"
+            >
+              ইমেইল
+            </label>
             <input
+              id="email"
               required
               type="email"
               autoComplete="email"
@@ -70,8 +87,14 @@ export default function SigninPage() {
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-bold">পাসওয়ার্ড</label>
+            <label
+              htmlFor="password"
+              className="mb-2 block text-sm font-bold text-gray-800"
+            >
+              পাসওয়ার্ড
+            </label>
             <input
+              id="password"
               required
               type="password"
               autoComplete="current-password"
@@ -83,8 +106,9 @@ export default function SigninPage() {
           </div>
 
           <button
+            type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-green-700 px-5 py-3 font-bold text-white transition hover:bg-green-800 disabled:opacity-60"
+            className="w-full rounded-xl bg-green-700 px-5 py-3 font-bold text-white transition hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? "লগইন হচ্ছে..." : "Sign In"}
           </button>
@@ -92,11 +116,28 @@ export default function SigninPage() {
 
         <p className="mt-6 text-center text-sm text-gray-600">
           অ্যাকাউন্ট নেই?{" "}
-          <Link href="/signup" className="font-bold text-green-700 hover:underline">
+          <Link
+            href="/signup"
+            className="font-bold text-green-700 hover:underline"
+          >
             Sign Up
           </Link>
         </p>
       </form>
     </section>
+  );
+}
+
+export default function SigninPage() {
+  return (
+    <Suspense
+      fallback={
+        <section className="container-page flex min-h-[65vh] items-center justify-center">
+          <p>লোড হচ্ছে...</p>
+        </section>
+      }
+    >
+      <SigninForm />
+    </Suspense>
   );
 }

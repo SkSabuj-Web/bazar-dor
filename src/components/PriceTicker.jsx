@@ -1,77 +1,104 @@
 
+"use client";
+
+import { useEffect, useState } from "react";
+import { apiFetch, getList, formatPrice } from "@/lib/api";
+
 function getName(product) {
-  return product.name || product.title || product.productName || "পণ্য";
+  return product.nameBn || product.name || product.title || "পণ্য";
 }
 
 function getPrice(product) {
-  return Number(
-    product.price ??
-    product.currentPrice ??
-    product.averagePrice ??
-    0
-  );
+  return Number(product.today ?? product.price ?? 0);
 }
 
 function getChange(product) {
   return Number(
+    product.change?.pct ??
     product.priceChangePercent ??
     product.changePercent ??
-    product.change ??
     0
   );
 }
 
-const icons = ["🍚", "🫘", "🥔", "🧅", "🌶️", "🐟", "🥚", "🫙"];
+function getEmoji(product) {
+  return product.image || product.categoryIcon || "🛒";
+}
 
-export default function PriceTicker({ products = [] }) {
-  const items = products.length ? products : [
-    { name: "বাজার দর", price: 0, change: 0 },
-  ];
+export default function PriceTicker() {
+  const [products, setProducts] = useState([]);
 
-  const tickerItems = [...items, ...items];
+  useEffect(() => {
+    let active = true;
+
+    async function loadProducts() {
+      try {
+        const data = await apiFetch("/products");
+        const list = getList(data, "products");
+
+        if (active) setProducts(list);
+      } catch (error) {
+        console.error("Ticker API error:", error);
+      }
+    }
+
+    loadProducts();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (!products.length) {
+    return (
+      <div className="overflow-hidden bg-green-950 py-4 text-white">
+        <p className="text-center text-sm">
+          আজকের বাজারদর লোড হচ্ছে...
+        </p>
+      </div>
+    );
+  }
+
+  const tickerProducts = [...products, ...products];
 
   return (
     <div className="overflow-hidden border-b border-green-900 bg-green-950 text-white">
-      <div className="flex min-h-11 items-center">
-        <span className="z-10 shrink-0 bg-green-800 px-3 py-3 text-xs font-bold sm:px-5">
-          আজকের বাজার
-        </span>
+      <div className="ticker-track items-center">
+        {tickerProducts.map((product, index) => {
+          const change = getChange(product);
+          const isUp = product.change?.dir === "up" || (!product.change?.dir && change > 0);
+          const isDown = product.change?.dir === "down" || (!product.change?.dir && change < 0);
 
-        <div className="min-w-0 flex-1 overflow-hidden">
-          <div className="ticker-track">
-            {tickerItems.map((product, index) => {
-              const change = getChange(product);
-              const price = getPrice(product);
+          return (
+            <div
+              key={`${product.id ?? product.slug ?? index}-${index}`}
+              className="flex shrink-0 items-center gap-3 px-6 py-4"
+            >
+              <span className="text-xl">{getEmoji(product)}</span>
 
-              return (
-                <div
-                  key={`${getName(product)}-${index}`}
-                  className="flex shrink-0 items-center gap-2 px-5 text-sm"
-                >
-                  <span>{icons[index % icons.length]}</span>
-                  <span className="font-medium">{getName(product)}</span>
-                  <span className="text-green-200">
-                    {new Intl.NumberFormat("bn-BD").format(price)} টাকা
-                  </span>
-                  <span
-                    className={
-                      change > 0
-                        ? "text-green-300"
-                        : change < 0
-                          ? "text-red-300"
-                          : "text-gray-300"
-                    }
-                  >
-                    {change > 0 ? "▲" : change < 0 ? "▼" : "—"}
-                    {new Intl.NumberFormat("bn-BD", {
-                      maximumFractionDigits: 1,
-                    }).format(Math.abs(change))}%
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+              <span className="font-semibold">
+                {getName(product)}
+              </span>
+
+              <span className="font-bold text-green-300">
+                {formatPrice(getPrice(product))} টাকা
+              </span>
+
+              <span
+                className={`text-sm font-bold ${
+                  isUp
+                    ? "text-green-300"
+                    : isDown
+                      ? "text-red-300"
+                      : "text-gray-300"
+                }`}
+              >
+                {isUp ? "▲ " : isDown ? "▼ " : "— "}
+                {formatPrice(Math.abs(change))}%
+              </span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

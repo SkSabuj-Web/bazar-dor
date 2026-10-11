@@ -1,29 +1,16 @@
 
-const API_BASES = [
-  "https://api.api-store.workers.dev/api/bazardor",
-  "https://api.abcz.workers.dev/api/bazardor",
-];
+const API_BASE = "https://openapi.programming-hero.com/api/bazardor";
 
 export async function apiFetch(path) {
-  let lastError;
+  const response = await fetch(`${API_BASE}${path}`, {
+    cache: "no-store",
+  });
 
-  for (const base of API_BASES) {
-    try {
-      const response = await fetch(`${base}${path}`, {
-        cache: "no-store",
-      });
-
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      lastError = error;
-    }
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
   }
 
-  throw lastError || new Error("ডেটা লোড করা যায়নি");
+  return response.json();
 }
 
 export function getList(data, key) {
@@ -31,6 +18,9 @@ export function getList(data, key) {
   if (Array.isArray(data?.[key])) return data[key];
   if (Array.isArray(data?.data)) return data.data;
   if (Array.isArray(data?.data?.[key])) return data.data[key];
+  if (Array.isArray(data?.products)) return data.products;
+  if (Array.isArray(data?.data?.products)) return data.data.products;
+
   return [];
 }
 
