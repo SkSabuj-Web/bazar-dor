@@ -112,6 +112,23 @@ function SigninForm() {
           >
             {loading ? "লগইন হচ্ছে..." : "Sign In"}
           </button>
+          <button
+  type="button"
+  onClick={async () => {
+    const result = await authClient.signIn.social({
+      provider: "google",
+      callbackURL: "/",
+    });
+
+    if (result?.error) {
+      toast.error("Google login করা যায়নি");
+    }
+  }}
+  className="flex w-full items-center justify-center gap-3 rounded-xl border border-gray-300 px-4 py-3 font-medium transition hover:bg-gray-100"
+>
+  <span className="font-bold text-lg">G</span>
+  Google দিয়ে Sign In
+</button>
         </div>
 
         <p className="mt-6 text-center text-sm text-gray-600">
