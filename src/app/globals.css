@@ -1,4 +1,3 @@
-
 @import "tailwindcss";
 
 :root {
@@ -14,10 +13,12 @@
 
 html {
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
+  min-width: 320px;
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, "Noto Sans Bengali", sans-serif;
@@ -29,28 +30,53 @@ a {
 }
 
 button,
-select {
+input,
+select,
+textarea {
   font: inherit;
 }
 
 button,
-a {
+a,
+input,
+select,
+textarea {
   -webkit-tap-highlight-color: transparent;
 }
 
+button,
+select {
+  max-width: 100%;
+}
+
+img,
+video {
+  max-width: 100%;
+}
+
+img {
+  height: auto;
+}
+
 .container-page {
-  width: min(1200px, calc(100% - 32px));
+  width: 100%;
+  max-width: 80rem;
   margin-inline: auto;
+  padding-inline: 1rem;
 }
 
 .section-space {
-  padding-block: 64px;
+  padding-block: 42px;
 }
 
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 20px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.product-grid > * {
+  min-width: 0;
 }
 
 .skeleton {
@@ -87,29 +113,57 @@ a {
   }
 }
 
-@media (max-width: 1024px) {
-  .product-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+@media (min-width: 640px) {
+  .container-page {
+    padding-inline: 1.5rem;
   }
-}
 
-@media (max-width: 700px) {
   .product-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
+    gap: 16px;
   }
 
   .section-space {
-    padding-block: 42px;
-  }
-
-  .container-page {
-    width: calc(100% - 24px);
+    padding-block: 48px;
   }
 }
 
-@media (max-width: 380px) {
+@media (min-width: 1024px) {
+  .container-page {
+    padding-inline: 2rem;
+  }
+
   .product-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .section-space {
+    padding-block: 56px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .product-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .section-space {
+    padding-block: 64px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }
