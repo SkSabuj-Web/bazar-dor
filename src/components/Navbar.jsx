@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
@@ -55,12 +54,12 @@ function NavbarContent() {
 
   function AuthLinks({ mobile = false }) {
     const linkStyle = mobile
-      ? "rounded-lg px-4 py-2 text-sm font-semibold"
-      : "rounded-xl px-4 py-2 text-sm font-semibold";
+      ? "flex min-h-10 items-center justify-center rounded-lg px-3 py-2 text-sm font-semibold"
+      : "flex min-h-10 items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold";
 
     if (isPending) {
       return (
-        <span className="px-3 py-2 text-sm text-gray-500">
+        <span className="px-2 py-2 text-sm text-gray-500">
           অপেক্ষা করুন...
         </span>
       );
@@ -71,7 +70,7 @@ function NavbarContent() {
         <>
           <Link
             href="/profile"
-            className={`${linkStyle} border border-green-600 text-green-800 hover:bg-green-50`}
+            className={`${linkStyle} border border-green-600 text-green-800 transition hover:bg-green-50`}
           >
             আমার প্রোফাইল
           </Link>
@@ -79,7 +78,7 @@ function NavbarContent() {
           <button
             type="button"
             onClick={handleLogout}
-            className={`${linkStyle} bg-red-600 text-white hover:bg-red-700`}
+            className={`${linkStyle} bg-red-600 text-white transition hover:bg-red-700`}
           >
             লগআউট
           </button>
@@ -91,14 +90,14 @@ function NavbarContent() {
       <>
         <Link
           href="/signin"
-          className={`${linkStyle} text-green-800 hover:bg-green-50`}
+          className={`${linkStyle} text-green-800 transition hover:bg-green-50`}
         >
           সাইন ইন
         </Link>
 
         <Link
           href="/signup"
-          className={`${linkStyle} bg-green-700 text-white hover:bg-green-800`}
+          className={`${linkStyle} bg-green-700 text-white transition hover:bg-green-800`}
         >
           সাইন আপ
         </Link>
@@ -109,29 +108,37 @@ function NavbarContent() {
   return (
     <header className="sticky top-0 z-50 border-b border-green-100 bg-white/95 backdrop-blur">
       <div className="container-page">
-        <div className="flex min-h-[82px] items-center justify-between gap-4">
-          <Link href="/" className="flex shrink-0 items-center gap-3">
-            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-green-100 text-2xl">
+        {/* Logo and desktop authentication */}
+        <div className="flex min-h-[72px] items-center justify-between gap-2 py-2 sm:min-h-[82px] sm:gap-4">
+          <Link
+            href="/"
+            className="flex min-w-0 shrink items-center gap-2 sm:gap-3"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-green-100 text-xl sm:h-12 sm:w-12 sm:rounded-2xl sm:text-2xl">
               🛒
             </span>
 
-            <span>
-              <span className="block text-xl font-black tracking-tight text-green-800 sm:text-2xl">
+            <span className="min-w-0">
+              <span className="block text-lg font-black tracking-tight text-green-800 sm:text-2xl">
                 বাজার দর
               </span>
 
-              <span className="block text-xs text-gray-500">
+              <span className="block max-w-[210px] truncate text-[10px] text-gray-500 sm:max-w-none sm:text-xs">
                 {currentDate}
               </span>
             </span>
           </Link>
 
-          <div className="hidden items-center gap-2 sm:flex">
+          <div className="hidden shrink-0 items-center gap-2 sm:flex">
             <AuthLinks />
           </div>
         </div>
 
-        <nav className="-mx-1 flex gap-2 overflow-x-auto pb-3">
+        {/* Horizontally scrollable categories */}
+        <nav
+          aria-label="পণ্যের ক্যাটাগরি"
+          className="-mx-1 flex gap-2 overflow-x-auto overscroll-x-contain pb-3 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
           {categories.map((category) => {
             const href =
               category.slug === "all"
@@ -147,7 +154,8 @@ function NavbarContent() {
               <Link
                 key={category.slug}
                 href={href}
-                className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition ${
+                aria-current={active ? "page" : undefined}
+                className={`flex min-h-10 shrink-0 items-center whitespace-nowrap rounded-full px-3 py-2 text-xs font-semibold transition sm:px-4 sm:text-sm ${
                   active
                     ? "bg-green-700 text-white"
                     : "bg-gray-100 text-gray-700 hover:bg-green-50 hover:text-green-800"
@@ -159,6 +167,7 @@ function NavbarContent() {
           })}
         </nav>
 
+        {/* Mobile authentication */}
         <div className="flex flex-wrap items-center gap-2 pb-3 sm:hidden">
           <AuthLinks mobile />
         </div>
@@ -172,7 +181,7 @@ export default function Navbar() {
     <Suspense
       fallback={
         <header className="sticky top-0 z-50 border-b border-green-100 bg-white/95">
-          <div className="container-page min-h-[82px]" />
+          <div className="container-page min-h-[72px] sm:min-h-[82px]" />
         </header>
       }
     >
